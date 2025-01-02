@@ -56,7 +56,6 @@ RUN apt-get update
 RUN apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Clone your dotfiles with GitHub token
-
 RUN --mount=type=secret,id=github_token \
     bash -c 'git clone https://$(cat /run/secrets/github_token)@github.com/FredericOdermatt/my_dotfiles.git /home/devuser/.chezmoi && \
              chown -R devuser:devuser /home/devuser/.chezmoi'
