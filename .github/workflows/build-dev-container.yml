@@ -35,6 +35,8 @@ jobs:
       with:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/dev-container:${{ env.COMMIT_HASH }}
+        secrets: |
+          "chezmoi_read_token=${{ secrets.CHEZMOI_READ_TOKEN }}"
         context: .
         file: Dockerfile
         platforms: linux/amd64
