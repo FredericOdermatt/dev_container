@@ -6,8 +6,8 @@ My docker dev container
 
 Todo
 
-* zsh show user and machine in left prompt
-* vimrc / neovim configs
-* default extensions VSC
-* docker socket expose
-* vscode to container on remote
+- [x] zsh show user and machine in left prompt
+- [ ] vimrc / neovim configs
+- [ ] default extensions VSC
+- [ ] docker socket expose
+- [ ] vscode to container on remote
