@@ -14,6 +14,12 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
+    - name: Get latest commit hash from main branch
+      id: get_commit_hash
+      run: |
+        COMMIT_HASH=$(git rev-parse origin/main)
+        echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+
     - name: Set up Docker BuildKit
       run: |
         export DOCKER_BUILDKIT=1
@@ -26,7 +32,7 @@ jobs:
 
     - name: Build Docker image
       run: |
-        echo "${{ secrets.CHEZMOI_READ_TOKEN }}" | docker build --secret id=github_token,src=/dev/stdin -f Dockerfile -t frederic/dev-container .
+        echo "${{ secrets.CHEZMOI_READ_TOKEN }}" | docker build --secret id=github_token,src=/dev/stdin -f Dockerfile -t frederic/dev-container:${{ env.COMMIT_HASH }} .
 
     - name: Push Docker image to Docker Hub
       run: |
