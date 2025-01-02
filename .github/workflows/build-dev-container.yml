@@ -30,10 +30,11 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build Docker image
-      run: |
-        echo "${{ secrets.CHEZMOI_READ_TOKEN }}" | docker build --secret id=github_token,src=/dev/stdin -f Dockerfile -t frederic/dev-container:${{ env.COMMIT_HASH }} .
-
-    - name: Push Docker image to Docker Hub
-      run: |
-        docker push ${{ secrets.DOCKER_USERNAME }}/dev-container
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/dev-container:${{ env.COMMIT_HASH }}
+        context: .
+        file: Dockerfile
+        platforms: linux/amd64
