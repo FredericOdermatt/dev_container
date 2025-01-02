@@ -56,6 +56,7 @@ RUN apt-get update
 RUN apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Clone your dotfiles with GitHub token
+
 RUN --mount=type=secret,id=github_token \
     bash -c 'git clone https://$(cat /run/secrets/github_token)@github.com/FredericOdermatt/my_dotfiles.git /home/devuser/.chezmoi && \
              chown -R devuser:devuser /home/devuser/.chezmoi'
@@ -70,9 +71,6 @@ RUN RUNZSH=no CHSH=yes KEEP_ZSHRC=yes bash -c "$(curl -fsSL https://raw.githubus
 RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/devuser/.oh-my-zsh/custom/themes/powerlevel10k && \
     git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
     git clone https://github.com/zsh-users/zsh-autosuggestions.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-
-# Install Oh My Zsh plugins and set Zsh configuration
-RUN echo "source ~/.zshrc" > ~/.zshenv
 
 # Apply chezmoi configuration
 RUN chezmoi init --apply /home/devuser/.chezmoi
