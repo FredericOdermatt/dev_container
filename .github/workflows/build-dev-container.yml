@@ -30,4 +30,4 @@ jobs:
 
     - name: Push Docker image to Docker Hub
       run: |
-        docker push frederic/dev-container
+        docker push ${{ secrets.DOCKER_USERNAME }}/dev-container
