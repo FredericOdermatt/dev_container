@@ -33,19 +33,11 @@ RUN apt-get update && apt-get install -y \
       wget \
       zsh
 
-RUN  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
-
+# Install chezmoi
+RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
+ 
 # Install sudo and add user to sudo group
 RUN apt-get install -y sudo && usermod -aG sudo devuser
-
-# Install Oh My Zsh
-RUN RUNZSH=no CHSH=no KEEP_ZSHRC=yes bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-# RUN curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash || true
-
-# Install Powerlevel10k theme and Zsh plugins
-RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/devuser/.oh-my-zsh/custom/themes/powerlevel10k && \
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
-    git clone https://github.com/zsh-users/zsh-autosuggestions.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-autosuggestions
 
 # Ensure devuser owns the configuration files
 RUN chown -R devuser:devuser /home/devuser
@@ -72,6 +64,7 @@ RUN --mount=type=secret,id=github_token \
     bash -c 'git clone https://$(cat /run/secrets/github_token)@github.com/FredericOdermatt/my_dotfiles.git /home/devuser/.chezmoi && \
              chown -R devuser:devuser /home/devuser/.chezmoi'
 
+
 USER devuser
 WORKDIR /home/devuser
 
@@ -81,6 +74,15 @@ RUN chezmoi init --apply /home/devuser/.chezmoi
 # Symlink and copy tmux config
 RUN ln -s -f .tmux/.tmux.conf
 RUN cp /home/devuser/.tmux/.tmux.conf.local /home/devuser/
+
+# Install Oh My Zsh
+RUN RUNZSH=no CHSH=no KEEP_ZSHRC=yes bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+# RUN curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash || true
+
+# Install Powerlevel10k theme and Zsh plugins
+RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/devuser/.oh-my-zsh/custom/themes/powerlevel10k && \
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
+    git clone https://github.com/zsh-users/zsh-autosuggestions.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-autosuggestions
 
 # Install Oh My Zsh plugins and set Zsh configuration
 RUN echo "source ~/.zshrc" > ~/.zshenv
