@@ -34,7 +34,9 @@ jobs:
       uses: docker/build-push-action@v5
       with:
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/dev-container:${{ env.COMMIT_HASH }}
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/dev-container:${{ env.COMMIT_HASH }}
+          ${{ secrets.DOCKER_USERNAME }}/dev-container:latest
         secrets: |
           "chezmoi_read_token=${{ secrets.CHEZMOI_READ_TOKEN }}"
         context: .
