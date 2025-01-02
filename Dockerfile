@@ -7,9 +7,6 @@ ENV LANG=en_US.UTF-8
 RUN apt-get update && apt-get install -y locales && locale-gen en_US.UTF-8
 ENV XDG_CONFIG_HOME=/home/devuser/.config
 
-# Create a user with a home directory
-RUN useradd -ms /bin/bash devuser
-
 # Common packages
 RUN apt-get update && apt-get install -y \
       build-essential \
@@ -22,6 +19,9 @@ RUN apt-get update && apt-get install -y \
       libevent-dev \
       net-tools \
       netcat-openbsd \
+      python3 \
+      python3-pip \
+      python3-pygments \
       rubygems \
       ruby-dev \
       silversearcher-ag \
@@ -31,10 +31,15 @@ RUN apt-get update && apt-get install -y \
       tzdata \
       vim \
       wget \
-      zsh 
+      zsh
 
-RUN  sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
-
+# Install chezmoi
+RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
+ 
+# Create a user with a home directory
+RUN useradd -ms /bin/bash devuser
+RUN apt-get install -y sudo && usermod -aG sudo devuser
+RUN chown -R devuser:devuser /home/devuser
 
 # Add Docker's official GPG key
 RUN install -m 0755 -d /etc/apt/keyrings
@@ -50,16 +55,31 @@ RUN echo \
 RUN apt-get update
 RUN apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-RUN chsh -s /usr/bin/zsh devuser
-
+RUN echo "hello"
+# Clone your dotfiles with GitHub token
 RUN --mount=type=secret,id=github_token \
     bash -c 'git clone https://$(cat /run/secrets/github_token)@github.com/FredericOdermatt/my_dotfiles.git /home/devuser/.chezmoi && \
              chown -R devuser:devuser /home/devuser/.chezmoi'
 
 USER devuser
 WORKDIR /home/devuser
+
+# Install Oh My Zsh
+RUN RUNZSH=no CHSH=yes KEEP_ZSHRC=yes bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+# Install Powerlevel10k theme and Zsh plugins
+RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/devuser/.oh-my-zsh/custom/themes/powerlevel10k && \
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
+    git clone https://github.com/zsh-users/zsh-autosuggestions.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+
+# Install Oh My Zsh plugins and set Zsh configuration
+RUN echo "source ~/.zshrc" > ~/.zshenv
+
+# Apply chezmoi configuration
 RUN chezmoi init --apply /home/devuser/.chezmoi
+
+# Symlink and copy tmux config
 RUN ln -s -f .tmux/.tmux.conf
 RUN cp /home/devuser/.tmux/.tmux.conf.local /home/devuser/
 
-ENTRYPOINT ["/usr/bin/zsh"]
+ENTRYPOINT ["tmux", "new", "-A", "-s", "main"]
