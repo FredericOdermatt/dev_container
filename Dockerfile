@@ -78,4 +78,10 @@ RUN chezmoi init --apply /home/devuser/.chezmoi
 RUN ln -s -f .tmux/.tmux.conf
 RUN cp /home/devuser/.tmux/.tmux.conf.local /home/devuser/
 
+# Install VS Code server
+RUN curl -fsSL https://update.code.visualstudio.com/latest/server-linux-x64/stable -o /tmp/vscode-server.tar.gz && \
+    mkdir -p /home/devuser/.vscode-server/bin && \
+    tar -xzf /tmp/vscode-server.tar.gz -C /home/devuser/.vscode-server/bin && \
+    rm /tmp/vscode-server.tar.gz
+
 ENTRYPOINT ["tmux", "new", "-A", "-s", "main"]
