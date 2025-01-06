@@ -69,7 +69,8 @@ RUN RUNZSH=no CHSH=yes KEEP_ZSHRC=yes bash -c "$(curl -fsSL https://raw.githubus
 # Install Powerlevel10k theme and Zsh plugins
 RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/devuser/.oh-my-zsh/custom/themes/powerlevel10k && \
     git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
-    git clone https://github.com/zsh-users/zsh-autosuggestions.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+    git clone https://github.com/zsh-users/zsh-autosuggestions.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-autosuggestions && \
+    git clone https://github.com/agkozak/zsh-z /home/devuser/.oh-my-zsh/custom/plugins/zsh-z
 
 # Apply chezmoi configuration
 RUN chezmoi init --apply /home/devuser/.chezmoi
