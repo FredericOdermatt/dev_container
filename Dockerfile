@@ -85,4 +85,5 @@ RUN curl -fsSL https://update.code.visualstudio.com/latest/server-linux-x64/stab
     tar -xzf /tmp/vscode-server.tar.gz -C /home/devuser/.vscode-server/bin && \
     rm /tmp/vscode-server.tar.gz
 
+RUN touch hello_schlonz.txt
 ENTRYPOINT ["tmux", "new", "-A", "-s", "main"]
