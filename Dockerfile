@@ -1,11 +1,12 @@
 # syntax=docker/dockerfile:1.4
+ARG DEVUSER=devuser
 FROM ubuntu:24.04
 
 # Locales
 ENV LANGUAGE=en_US.UTF-8
 ENV LANG=en_US.UTF-8
 RUN apt-get update && apt-get install -y locales && locale-gen en_US.UTF-8
-ENV XDG_CONFIG_HOME=/home/devuser/.config
+ENV XDG_CONFIG_HOME=/home/$DEVUSER/.config
 
 # Common packages
 RUN apt-get update && apt-get install -y \
@@ -35,11 +36,11 @@ RUN apt-get update && apt-get install -y \
 
 # Install chezmoi
 RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
- 
+
 # Create a user with a home directory
-RUN useradd -ms /bin/bash devuser
-RUN apt-get install -y sudo && usermod -aG sudo devuser
-RUN chown -R devuser:devuser /home/devuser
+RUN useradd -ms /bin/bash $DEVUSER
+RUN apt-get install -y sudo && usermod -aG sudo $DEVUSER
+RUN chown -R $DEVUSER:$DEVUSER /home/$DEVUSER
 
 # Add Docker's official GPG key
 RUN install -m 0755 -d /etc/apt/keyrings
@@ -57,32 +58,32 @@ RUN apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugi
 
 # Clone your dotfiles with GitHub token
 RUN --mount=type=secret,id=chezmoi_read_token \
-    bash -c 'git clone https://$(cat /run/secrets/chezmoi_read_token)@github.com/FredericOdermatt/my_dotfiles.git /home/devuser/.chezmoi && \
-             chown -R devuser:devuser /home/devuser/.chezmoi'
+    bash -c 'git clone https://$(cat /run/secrets/chezmoi_read_token)@github.com/FredericOdermatt/my_dotfiles.git /home/$DEVUSER/.chezmoi && \
+             chown -R $DEVUSER:$DEVUSER /home/$DEVUSER/.chezmoi'
 
-USER devuser
-WORKDIR /home/devuser
+USER $DEVUSER
+WORKDIR /home/$DEVUSER
 
 # Install Oh My Zsh
 RUN RUNZSH=no CHSH=yes KEEP_ZSHRC=yes bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 # Install Powerlevel10k theme and Zsh plugins
-RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/devuser/.oh-my-zsh/custom/themes/powerlevel10k && \
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
-    git clone https://github.com/zsh-users/zsh-autosuggestions.git /home/devuser/.oh-my-zsh/custom/plugins/zsh-autosuggestions && \
-    git clone https://github.com/agkozak/zsh-z /home/devuser/.oh-my-zsh/custom/plugins/zsh-z
+RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git /home/$DEVUSER/.oh-my-zsh/custom/themes/powerlevel10k && \
+    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/$DEVUSER/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && \
+    git clone https://github.com/zsh-users/zsh-autosuggestions.git /home/$DEVUSER/.oh-my-zsh/custom/plugins/zsh-autosuggestions && \
+    git clone https://github.com/agkozak/zsh-z /home/$DEVUSER/.oh-my-zsh/custom/plugins/zsh-z
 
 # Apply chezmoi configuration
-RUN chezmoi init --apply /home/devuser/.chezmoi
+RUN chezmoi init --apply /home/$DEVUSER/.chezmoi
 
 # Symlink and copy tmux config
 RUN ln -s -f .tmux/.tmux.conf
-RUN cp /home/devuser/.tmux/.tmux.conf.local /home/devuser/
+RUN cp /home/$DEVUSER/.tmux/.tmux.conf.local /home/$DEVUSER/
 
 # Install VS Code server
 RUN curl -fsSL https://update.code.visualstudio.com/latest/server-linux-x64/stable -o /tmp/vscode-server.tar.gz && \
-    mkdir -p /home/devuser/.vscode-server/bin && \
-    tar -xzf /tmp/vscode-server.tar.gz -C /home/devuser/.vscode-server/bin && \
+    mkdir -p /home/$DEVUSER/.vscode-server/bin && \
+    tar -xzf /tmp/vscode-server.tar.gz -C /home/$DEVUSER/.vscode-server/bin && \
     rm /tmp/vscode-server.tar.gz
 
 ENTRYPOINT ["tmux", "new", "-A", "-s", "main"]
