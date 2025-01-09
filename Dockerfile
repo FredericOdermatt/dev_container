@@ -1,16 +1,24 @@
 # syntax=docker/dockerfile:1.4
 ARG DEVUSER=devuser
+
 FROM ubuntu:24.04
 
 ENV DEVUSER=devuser
-# Locales
+
 ENV LANGUAGE=en_US.UTF-8
 ENV LANG=en_US.UTF-8
-RUN apt-get update && apt-get install -y locales && locale-gen en_US.UTF-8
 ENV XDG_CONFIG_HOME=/home/${DEVUSER}/.config
 
+# Install locales
+RUN apt-get update && \
+    apt-get install -y locales && \
+    locale-gen en_US.UTF-8 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Common packages
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && \
+      apt-get install -y --no-install-recommends \
       build-essential \
       ca-certificates \
       curl \
@@ -29,18 +37,35 @@ RUN apt-get update && apt-get install -y \
       silversearcher-ag \
       socat \
       software-properties-common \
+      sudo \
       tmux \
       tzdata \
       vim \
       wget \
-      zsh
+      zsh && \
+      apt-get clean && \
+      rm -rf /var/lib/apt/lists/*
+
+# Neovim installation
+RUN add-apt-repository ppa:neovim-ppa/unstable -y && \
+      apt-get update && \
+      apt-get install -y --no-install-recommends \
+          make \
+          gcc \
+          ripgrep \
+          unzip \
+          git \
+          xclip \
+          neovim && \
+      apt-get clean && \
+      rm -rf /var/lib/apt/lists/*
 
 # Install chezmoi
 RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
 
 # Create a user with a home directory
 RUN useradd -ms /bin/bash ${DEVUSER}
-RUN apt-get install -y sudo && usermod -aG sudo ${DEVUSER}
+RUN usermod -aG sudo ${DEVUSER}  # requires sudo package
 RUN chown -R ${DEVUSER}:${DEVUSER} /home/${DEVUSER}
 
 # Add Docker's official GPG key
