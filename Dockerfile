@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1.4
 ARG DEVUSER=devuser
+# Add build arguments for installation modes
+ARG INSTALL_VSCODE=false
+ARG INSTALL_NVIM=false
 
 FROM ubuntu:24.04
-
 ENV DEVUSER=devuser
-
 ENV LANGUAGE=en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV XDG_CONFIG_HOME=/home/${DEVUSER}/.config
@@ -46,8 +47,10 @@ RUN apt-get update && \
       apt-get clean && \
       rm -rf /var/lib/apt/lists/*
 
-# Neovim installation
-RUN add-apt-repository ppa:neovim-ppa/unstable -y && \
+# Neovim installation (conditional)
+ARG INSTALL_NVIM
+RUN if [ "$INSTALL_NVIM" = "true" ]; then \
+      add-apt-repository ppa:neovim-ppa/unstable -y && \
       apt-get update && \
       apt-get install -y --no-install-recommends \
           make \
@@ -58,7 +61,8 @@ RUN add-apt-repository ppa:neovim-ppa/unstable -y && \
           xclip \
           neovim && \
       apt-get clean && \
-      rm -rf /var/lib/apt/lists/*
+      rm -rf /var/lib/apt/lists/* ; \
+    fi
 
 # Install chezmoi
 RUN sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
@@ -78,7 +82,6 @@ RUN echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
   $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   tee /etc/apt/sources.list.d/docker.list > /dev/null
-
 RUN apt-get update
 RUN apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
@@ -106,13 +109,19 @@ RUN chezmoi init --apply /home/${DEVUSER}/.chezmoi
 RUN ln -s -f .tmux/.tmux.conf
 RUN cp /home/${DEVUSER}/.tmux/.tmux.conf.local /home/${DEVUSER}/
 
-# Install VS Code server
-RUN curl -fsSL https://update.code.visualstudio.com/latest/server-linux-x64/stable -o /tmp/vscode-server.tar.gz && \
-    mkdir -p /home/${DEVUSER}/.vscode-server/bin && \
-    tar -xzf /tmp/vscode-server.tar.gz -C /home/${DEVUSER}/.vscode-server/bin && \
-    rm /tmp/vscode-server.tar.gz
+# Install VS Code server (conditional)
+ARG INSTALL_VSCODE
+RUN if [ "$INSTALL_VSCODE" = "true" ]; then \
+      curl -fsSL https://update.code.visualstudio.com/latest/server-linux-x64/stable -o /tmp/vscode-server.tar.gz && \
+      mkdir -p /home/${DEVUSER}/.vscode-server/bin && \
+      tar -xzf /tmp/vscode-server.tar.gz -C /home/${DEVUSER}/.vscode-server/bin && \
+      rm /tmp/vscode-server.tar.gz ; \
+    fi
 
-# Install nvim plugins
-RUN nvim --headless +':Lazy! sync' +qa
+# Install nvim plugins (conditional)
+ARG INSTALL_NVIM
+RUN if [ "$INSTALL_NVIM" = "true" ]; then \
+      nvim --headless +':Lazy! sync' +qa ; \
+    fi
 
 ENTRYPOINT ["tmux", "new", "-A", "-s", "main"]
