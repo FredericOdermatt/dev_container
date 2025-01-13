@@ -21,7 +21,7 @@ docker build --secret id=chezmoi_read_token,src=/home/frederic/chezmoi_read_toke
 Todo
 
 - [x] zsh show user and machine in left prompt
-- [ ] vimrc / neovim configs
+- [x] vimrc / neovim configs
 - [ ] default extensions VSC
 - [x] docker socket expose
 - [ ] vscode to container on remote
