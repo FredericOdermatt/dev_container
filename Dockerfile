@@ -112,4 +112,7 @@ RUN curl -fsSL https://update.code.visualstudio.com/latest/server-linux-x64/stab
     tar -xzf /tmp/vscode-server.tar.gz -C /home/${DEVUSER}/.vscode-server/bin && \
     rm /tmp/vscode-server.tar.gz
 
+# Install nvim plugins
+RUN nvim --headless +':Lazy! sync' +qa
+
 ENTRYPOINT ["tmux", "new", "-A", "-s", "main"]
