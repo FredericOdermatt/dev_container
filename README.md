@@ -4,7 +4,7 @@ My docker dev container
 
 **Base Execution**
 ```bash
-docker run -it --rm fredericodermatt1/dev-container
+docker run -it --rm fredericodermatt1/dev-container:complete
 ```
 
 **Expose Base Docker Socket**
